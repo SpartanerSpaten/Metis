@@ -4,11 +4,7 @@ ERROR_PYCUDA_MISSING = ImportError("PYCUDA IS MISSING")
 ERROR_NUMPY_MISSING = ImportError("NUMPY IS MISSING")
 ERROR_SCIKIT_CUDA_MISSING = ImportError("SCIKIT_CUDA IS MISSING")
 
-try:
-    import numpy
-except:
-    raise ERROR_NUMPY_MISSING
-
+import numpy
 import pycuda.gpuarray as gpuarray
 import skcuda.linalg as linalg
 import numpy
@@ -18,7 +14,7 @@ from Assets import split_input_tensor, split_output, parse_code
 
 
 class Layer:
-    def __init__(self, input_size, output_size, activation_function):
+    def __init__(self, input_size: int, output_size: int, activation_function):
 
         self.weights = gpuarray.to_gpu(numpy.random.normal(0.0, pow(output_size, -0.5), (output_size, input_size)))
 
@@ -26,9 +22,11 @@ class Layer:
 
         self.output_size = output_size
 
+        self.bias = numpy.random.normal(-0.5, 0.5, (output_size, 1))
+
         self.activation_function = activation_function
 
-        if self.activation_function.__name__ == "expit":
+        if "__name__" in dir(self.activation_function) and self.activation_function.__name__ == "expit":
             self.function_source = "def expit(x):\nreturn 1 / (1 + pow(math.e, -1 * x))"
 
 
@@ -46,7 +44,7 @@ class Layer:
 
     def forward(self, input_tensor):
         a_gpu = gpuarray.to_gpu(input_tensor)
-        out_gpu = linalg.dot(a_gpu, self.weights)
+        out_gpu = linalg.dot(a_gpu, self.weights) + self.bias
         return self.activation_function(out_gpu)
 
     def backward(self, output):
@@ -73,6 +71,8 @@ class Layer:
 
         temp3 = learning_rate * linalg.dot((error * output * (1.0 - output)),
                                            gpuarray.to_gpu(numpy.array(numpy.transpose(input), ndmin=2)))
+
+        self.bias -= learning_rate * 1 * output
 
         self.weights += temp3
 

@@ -7,7 +7,7 @@ WARNING_LAYER_CANNOT_EXTRACT_FUNCTION_SOURCE_CODE = ResourceWarning(
 
 
 class Layer:
-    def __init__(self, input_size, output_size, activation_function):
+    def __init__(self, input_size: int, output_size: int, activation_function):
         self.weights = numpy.random.normal(0.0, pow(output_size, -0.5), (output_size, input_size))
 
         self.input_size = input_size
@@ -16,7 +16,9 @@ class Layer:
 
         self.activation_function = activation_function
 
-        if self.activation_function.__name__ == "expit":
+        self.bias = numpy.random.normal(-0.5, 0.5, (output_size, 1))
+
+        if "__name__" in dir(self.activation_function) and self.activation_function.__name__ == "expit":
             self.function_source = "def expit(x):\nreturn 1 / (1 + pow(math.e, -1 * x))"
 
 
@@ -58,6 +60,8 @@ class Layer:
 
         temp3 = learning_rate * numpy.dot((error * output * (1.0 - output)),
                                           numpy.array(numpy.transpose(input), ndmin=2))
+
+        self.bias -= learning_rate * 1 * output
 
         self.weights += temp3
 
@@ -115,7 +119,7 @@ class Conv2D_Layer(Layer):
 
         if input.ndim == 2:
             input = split_input_tensor(input.flatten(), self.pattern_size[1], delete_rest=True)
-        print("output:", output.ndim, output)
+
         for count, plate in enumerate(self.plates):
             print(numpy.transpose(input), "\n", (error[count] * output[count] * (1.0 - output[count])))
             self.plates[count] += learning_rate * numpy.dot((error[count] * output[count] * (1.0 - output[count])),

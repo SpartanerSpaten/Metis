@@ -1,6 +1,6 @@
 import numpy
 import Assets
-from Layer import Layer, Conv2D_Layer
+from Metis_CPU_only.Layer import Layer, Conv2D_Layer
 import json
 
 
@@ -9,7 +9,14 @@ class Model:
 
         self.layer = []
 
-    def train(self, data, learning_rate=0.3, randomise=False, epochs=10):
+    def train(self, data: list, learning_rate: float = 0.3, randomise=False, epochs=10):
+        """
+        Train your nn model to a given trainings data.
+        :param data: Your Trainings data set with the shape [[input1,desired1],[input2,desired2]]
+        :param learning_rate: learning rate default is 0.3
+        :param randomise: should the trainings data be randomised (bool)
+        :param epochs: how often the nn should use this trainings data (int)
+        """
 
         for epoch in range(epochs):
             if randomise is True:
@@ -51,7 +58,12 @@ class Model:
             else:
                 layer.update_weights(hidden_errors[1], output_list[count], inputs, learning_rate)
 
-    def forward(self, input_list):
+    def forward(self, input_list: list or numpy.ndarray):
+        """
+        Calculates the output with your given input vector.
+        :param input_list: list or ndarray
+        :return: ndarray with the size of the last layer
+        """
         if type(input_list) is numpy.array:
             output = input_list
         else:
@@ -64,7 +76,13 @@ class Model:
 
         return output
 
-    def backward(self, output, function):
+    def backward(self, output: numpy.ndarray or list, function):
+        """
+        In develop
+        :param output:
+        :param function:
+        :return:
+        """
 
         output = numpy.array(output, ndmin=2).T
 
@@ -83,13 +101,22 @@ class Model:
 
         return output
 
-    def add(self, level, layer):
+    def add(self, level: int, layer: Layer or Conv2D_Layer):
+        """
+        Adds another layer to the nn model.
+        :param level: integer where the layer should beplaced
+        :param layer: Layer object
+        """
         if level > len(self.layer) - 1:
             self.layer += [layer]
         else:
             self.layer.insert(level, layer)
 
     def convert2json(self):
+        """
+        Converts this nn model to a dict
+        :return: nn model dict
+        """
         layer_matrix = []
         return_value = {"class": "Metis_Model"}
         for layer in self.layer:
@@ -97,21 +124,55 @@ class Model:
         return_value.update({"layer": layer_matrix})
         return return_value
 
-    def load(self, json):
+    def load(self, json: dict):
+        """
+        Applies the config from the dict to this object
+        :param json: config
+        :return:
+        """
+        self.layer = []
         for count, layer in enumerate(json["layer"]):
             func = Assets.generate_function(layer[4])
             self.add(count, Layer(layer[1], layer[2], func))
             self.layer[count].weights = numpy.array(layer[3])
             self.layer[count].function_source = layer[4]
 
-    def save(self, path):
+    def save(self, path: str):
+        """
+        Saves this model
+        :param path: where the saved model should be placed
+        :return:
+        """
 
         content = self.convert2json()
 
         json.dump(content, open(path, "w+"))
 
-    def load_from_file(self, path):
+    def add_layer(self, layer: int, amount_of_neurons: int):
+        """
+        Waring this function can not be used when there is no layer in this model
+        This function generates automaticly a new Layer by a given amount of neurons.
+        :param layer: layer > 0 where the new layer should be located
+        :param amount_of_neurons: amount of neurons in this layer
+        """
 
-        content = json.load(open(path))
+        if len(self.layer) > layer:
+            layer = len(layer)
 
-        self.load(content)
+        input_size = self.layer[layer - 1].output_size
+
+        self.layer.insert(layer, Layer(input_size, amount_of_neurons))
+
+    @staticmethod
+    def load_from_file(path: str) -> 'Model':
+        """
+        Reads the file and generates from it a now Model object
+        :param path: path to file
+        :return: Model object
+        """
+
+        model = Model()
+
+        model.load(json.load(open(path)))
+
+        return model
