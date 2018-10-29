@@ -15,6 +15,14 @@ $ python3 setup.py install
 
 Perhaps you have to execute this commands as root user.
 
+If you want Cuda support add --pycuda to the command from above.
+```
+$ python3 setup.py install --pycuda
+```
+
+There is another option when you only want the pycuda version without the cpu one
+add --only_pycuda.
+
 ### Usage
 
 See example.py
