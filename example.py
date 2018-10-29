@@ -12,8 +12,8 @@ mydesired_output_vector = numpy.random.random(5)
 mymodel = Model()
 # Adding Layer to the Model
 mymodel.add(0, Layer(10, 30, expit))
-mymodel.add(1, Layer(30, 20, expit))
-mymodel.add(2, Layer(20, 5, expit))
+mymodel.add_layer(1, 20, expit)
+mymodel.add_layer(2, 5, expit)
 
 # Prints the forwarded result
 print(mymodel.forward(myinput_vector))
@@ -22,14 +22,14 @@ print(mydesired_output_vector)
 train_data = [[myinput_vector, mydesired_output_vector]]
 # Trains the AI model
 mymodel.train(train_data)
+
 # Prints the forwarded result
 print(mymodel.forward(myinput_vector))
 
 # Save the file to mymodel.json
 mymodel.save("mymodel.json")
-# Creates a new Model
-mynewmodel = Model()
-# Load the model from mymodel.json
-mynewmodel.load_from_file("mymodel.json")
+# Creates a new Model and loads the data from the mymodel.json file
+mynewmodel = Model.load_from_file("mymodel.json")
+
 
 print(mymodel.forward(myinput_vector))

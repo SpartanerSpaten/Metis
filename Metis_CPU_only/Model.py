@@ -148,7 +148,7 @@ class Model:
 
         json.dump(content, open(path, "w+"))
 
-    def add_layer(self, layer: int, amount_of_neurons: int):
+    def add_layer(self, layer: int, amount_of_neurons: int, func):
         """
         Waring this function can not be used when there is no layer in this model
         This function generates automaticly a new Layer by a given amount of neurons.
@@ -161,7 +161,7 @@ class Model:
 
         input_size = self.layer[layer - 1].output_size
 
-        self.layer.insert(layer, Layer(input_size, amount_of_neurons))
+        self.layer.insert(layer, Layer(input_size, amount_of_neurons, func))
 
     @staticmethod
     def load_from_file(path: str) -> 'Model':
