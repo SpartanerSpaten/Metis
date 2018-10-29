@@ -13,14 +13,16 @@ $ cd Metis
 $ python3 setup.py install
 ```
 
+Perhaps you have to execute this commands as root user.
+
 ### Usage
 
 See example.py
 
 ```python
-from Metis.Metis_CPU_only.Model import Model
-from Metis.Metis_CPU_only.Layer import Layer
-from Metis.Assets import expit, parse_code
+from Metis_CPU.Model import Model
+from Metis_CPU.Layer import Layer
+from Metis_CPU.Assets import expit
 import numpy
 
 mymodel = Model()

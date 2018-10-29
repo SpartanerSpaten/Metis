@@ -1,5 +1,5 @@
 import numpy
-import Assets
+import Metis_Pycuda.Assets
 from Metis_Pycuda.Layer import Layer, Conv2D_Layer
 import json
 
@@ -20,7 +20,7 @@ class Model:
 
         for epoch in range(epochs):
             if randomise is True:
-                data = Assets.randomise(data)
+                data = Metis_Pycuda.Assets.randomise(data)
             for element in data:
                 self._train_single(element[0], element[1], learning_rate)
 
@@ -144,7 +144,7 @@ class Model:
         """
         self.layer = []
         for count, layer in enumerate(json["layer"]):
-            func = Assets.generate_function(layer[4])
+            func = Metis_Pycuda.Assets.generate_function(layer[4])
             self.add(count, Layer(layer[1], layer[2], func))
             self.layer[count].weights = numpy.array(layer[3])
             self.layer[count].function_source = layer[4]

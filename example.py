@@ -1,6 +1,6 @@
-from Metis_CPU_only.Model import Model
-from Metis_CPU_only.Layer import Layer
-from Assets import expit, parse_code
+from Metis_CPU.Model import Model
+from Metis_CPU.Layer import Layer
+from Metis_CPU.Assets import expit
 import numpy
 
 # Generates with numpy random 1D vector
