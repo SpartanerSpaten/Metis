@@ -1,6 +1,6 @@
 from Metis_CPU.Model import Model
 from Metis_CPU.Layer import Layer
-from Metis_CPU.Assets import expit
+import Additional.Functions as f
 import numpy
 
 # Generates with numpy random 1D vector
@@ -11,9 +11,9 @@ mydesired_output_vector = numpy.random.random(5)
 # Init AI Model class
 mymodel = Model()
 # Adding Layer to the Model
-mymodel.add(0, Layer(10, 30, expit))
-mymodel.add_layer(1, 20, expit)
-mymodel.add_layer(2, 5, expit)
+mymodel.add(0, Layer(10, 30, f.expit))
+mymodel.add_layer(1, 20, f.expit)
+mymodel.add_layer(2, 5, f.expit)
 
 # Prints the forwarded result
 print(mymodel.forward(myinput_vector))

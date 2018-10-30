@@ -30,14 +30,14 @@ See example.py
 ```python
 from Metis_CPU.Model import Model
 from Metis_CPU.Layer import Layer
-from Metis_CPU.Assets import expit
+import Additional.Functions as f
 import numpy
 
 mymodel = Model()
 
-mymodel.add(0, Layer(10, 30, expit))
-mymodel.add_layer(1, 20, expit)
-mymodel.add_layer(2, 4, expit)
+mymodel.add(0, Layer(10, 30, f.expit))
+mymodel.add_layer(1, 20, f.expit)
+mymodel.add_layer(2, 4, f.expit)
 ```
 This sniped of code configurated our NN Model in all layers is used the expit function
 furthermore this model have 10 input neurons 20 hidden and 4 output neurons.

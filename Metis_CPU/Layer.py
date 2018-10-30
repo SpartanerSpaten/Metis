@@ -1,5 +1,5 @@
 import numpy
-from Metis_CPU.Assets import split_input_tensor, split_output, parse_code
+from Additional._Internal import split_input_tensor, split_output, parse_code
 from numpy.linalg import inv
 
 WARNING_LAYER_CANNOT_EXTRACT_FUNCTION_SOURCE_CODE = ResourceWarning(

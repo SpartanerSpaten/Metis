@@ -10,7 +10,7 @@ import skcuda.linalg as linalg
 import numpy
 
 linalg.init()
-from Metis_Pycuda.Assets import split_input_tensor, split_output, parse_code
+from Additional._Internal import split_input_tensor, split_output, parse_code
 
 
 class Layer:

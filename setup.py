@@ -1,12 +1,12 @@
 from setuptools import setup
 import sys
 
-REQUIRED = ["numpy","marshal",]
-PACKAGES = ['Metis_CPU',]
+REQUIRED = ["numpy",]
+PACKAGES = ["Metis_CPU","Additional",]
 
 
 if "--only_pycuda" in sys.argv:
-    PACKAGES = []
+    PACKAGES = ["Additional"]
 
 if "--pycuda" in sys.argv or "--only_pycuda" in sys.argv:
     REQUIRED.append("pycuda","skcuda")
@@ -14,9 +14,11 @@ if "--pycuda" in sys.argv or "--only_pycuda" in sys.argv:
 
 setup(
     name='metis',
-    version='0.0.4',
+    version='0.0.5',
     packages=PACKAGES,
     install_requires=REQUIRED,
+    #include_package_data=True,
+    #data_files=[("",["./Additional/_Internal.py","./Additional/etc.py","./Additional/Functions.py","./Additional/Image.py"])],
     url='https://github.com/SpartanerSpaten/Metis',
     license='MIT',
     author='dre',
