@@ -1,6 +1,8 @@
 import numpy
-from Additional._Internal import split_input_tensor, split_output, parse_code
+from Additional._Internal import parse_code, im2col_indices
 from numpy.linalg import inv
+import math
+import warnings
 
 WARNING_LAYER_CANNOT_EXTRACT_FUNCTION_SOURCE_CODE = ResourceWarning(
     "Layer can not extract activation function source code -> no save available")
@@ -73,54 +75,74 @@ class Layer:
 
 
 class Conv2D_Layer(Layer):
-    def __init__(self, pattern_input_size, amount_input_pattern, pattern_output_size, activation_function):
+    def __init__(self, pattern_n: int, pattern_size: int, activation_function):
 
-        self.plates = []
+        self.activation_function = lambda x: activation_function(numpy.array(x))
 
-        for x in range(amount_input_pattern):
-            self.plates.append(
-                numpy.random.normal(0.0, pow(pattern_output_size, -0.5), (pattern_output_size, pattern_input_size)))
+        self.pattern_size = pattern_size
 
-        self.activation_function = lambda x: activation_function(x)
+        self.pattern_n = pattern_n
 
-        self.pattern_size = (pattern_output_size, pattern_input_size)
+        self.filter = numpy.random.normal(0.0, 1, (self.pattern_n, self.pattern_size, self.pattern_size))
 
     def forward(self, input_tensor):
+        cutoffs = im2col_indices(input_tensor, self.pattern_size, self.pattern_size, stride=1, padding=2)
         output = []
+        for count, filter in enumerate(self.filter):
+            output.append([])
+            for cutoff in cutoffs:
+                output[count].append(numpy.sum(numpy.dot(filter, cutoff)))
 
-        if input_tensor.ndim == 2:
-            input_tensor = split_input_tensor(input_tensor, self.pattern_size[1], delete_rest=True)
-        for count, element in enumerate(self.plates):
-            if count == len(input_tensor):
-                break
-            output.append(self.activation_function(numpy.dot(element, input_tensor[count])))
-
-        return numpy.array(output)
+        out = numpy.array(output).reshape((len(output), int(math.sqrt(len(output[0]))), int(math.sqrt(len(output[0])))))
+        self.temp = cutoffs
+        return self.activation_function(out)
 
     def calculate_error(self, output_error):
-        error = []
-        print(output_error)
-        if output_error.ndim == 2:
-            output_error = split_input_tensor(output_error, self.pattern_size[1], delete_rest=True)
-        print(output_error)
-        for count, plate in enumerate(self.plates):
-            if count == len(output_error):
-                break
-            error.append(numpy.dot(plate, output_error[count]))
 
-        return error
+        input_tensor = numpy.array(output_error)
+
+        output = numpy.dot(self.filter.T, input_tensor)
+
+        return output
 
     def update_weights(self, error, output, input, learning_rate):
-        if error.ndim == 2:
-            error = split_input_tensor(error, self.pattern_size[0], delete_rest=True)
 
-        if output.ndim != 1:
-            output = split_output(output, self.pattern_size[0], delete_rest=True)
+        input = im2col_indices(input, self.pattern_size, self.pattern_size, stride=1, padding=2).tolist()
 
-        if input.ndim == 2:
-            input = split_input_tensor(input.flatten(), self.pattern_size[1], delete_rest=True)
+        for count, filter in enumerate(self.filter):
+            temp = numpy.zeros(filter.shape)
+            temp_output = im2col_indices(output[count], self.pattern_size, self.pattern_size, stride=1,
+                                         padding=2).tolist()
+            for count_y, y in enumerate(error[count]):
 
-        for count, plate in enumerate(self.plates):
-            print(numpy.transpose(input), "\n", (error[count] * output[count] * (1.0 - output[count])))
-            self.plates[count] += learning_rate * numpy.dot((error[count] * output[count] * (1.0 - output[count])),
-                                                            numpy.transpose(input[count]))
+                for count1, value in enumerate(y):
+                    temp += numpy.dot(
+                        (value * numpy.array(temp_output[count1]) * (1.0 - numpy.array(temp_output[count1]))),
+                        numpy.array(numpy.transpose(input[count_y]), ndmin=2))
+
+                self.filter[count] += temp * learning_rate
+
+
+class Pooling_Layer(Layer):
+    def __init__(self, pattern_size: int):
+
+        self.pattern_size = pattern_size
+
+    def forward(self, input_tensor):
+
+        input = im2col_indices(input_tensor, self.pattern_size, self.pattern_size, padding=0,
+                               stride=self.pattern_size).tolist()
+
+        output_shape = (int(input_tensor.shape[0] / self.pattern_size), int(input_tensor.shape[1] / self.pattern_size))
+
+        output = numpy.zeros(output_shape).tolist()
+
+        for count, element in enumerate(input):
+            temp1 = count - int(count / (self.pattern_size * 2)) * output_shape[0]
+            temp2 = int(count / (self.pattern_size * 2))
+            if temp2 == output_shape[0] or temp1 == output_shape[1]:
+                warnings.warn("Pooling Layer loses data because of not fitting input data")
+            else:
+                output[temp2][temp1] = max(element)
+
+        return output

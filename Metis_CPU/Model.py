@@ -40,17 +40,14 @@ class Model:
             output_list.append(forwarded_input)
 
         output_errors = desireds - output_list[-1]
-        last = output_errors
-        for count in range(0, len(self.layer)):
-            index = len(self.layer) - (count + 1)
-            layer = self.layer[index]
+
+        for layer in reversed(self.layer):
             output_errors = layer.calculate_error(output_errors)
             hidden_errors.insert(0, output_errors)
-        hidden_errors.append(last)
 
-        for count in range(0, len(self.layer)):
+        hidden_errors.append(desireds - output_list[-1])
 
-            layer = self.layer[count]
+        for count, layer in enumerate(self.layer):
 
             if count >= 1:
                 layer.update_weights(hidden_errors[count + 1], output_list[count], output_list[count - 1],

@@ -1,5 +1,5 @@
 from Metis_CPU.Model import Model
-from Metis_CPU.Layer import Layer
+from Metis_CPU.Layer import Layer, Conv2D_Layer, Pooling_Layer
 import Additional.Functions as f
 import numpy
 
@@ -30,6 +30,5 @@ print(mymodel.forward(myinput_vector))
 mymodel.save("mymodel.json")
 # Creates a new Model and loads the data from the mymodel.json file
 mynewmodel = Model.load_from_file("mymodel.json")
-
 
 print(mymodel.forward(myinput_vector))
